@@ -71,12 +71,39 @@ class NewsletterByID(Resource):
 
     def get(self, id):
 
-        response_dict = Newsletter.query.filter_by(id=id).first().to_dict()
+        if request.method == 'GET':
+            response_dict = Newsletter.query.filter_by(id=id).first().to_dict()
 
-        response = make_response(
-            response_dict,
-            200,
-        )
+            response = make_response(
+                response_dict,
+                200,
+            )
+
+        elif request.method == 'POST':
+            record = Newsletter.query.filter_by(id=id).first()
+            for attr in request.form:
+                setattr(record, attr, request.form[attr])
+
+            db.session.add(record)
+            db.session.commit()
+
+            response_dict = make_response(
+                response_dict,
+                200
+            )
+
+        elif request.method == 'DELETE':
+            record = Newsletter.query.filter_by(id=id).first()
+
+            db.session.delete(record)
+            db.session.commit()
+
+            response_dict = {"message": "record successfully deleted"}
+
+            response = make_response(
+                response_dict,
+                200
+            )
 
         return response
 
